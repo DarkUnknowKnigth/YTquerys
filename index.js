@@ -32,12 +32,12 @@ app.get('/download/:id/:name/:itag', function(req, res) {
     });
     video.on('end', () => {
         console.log('Disponible');
-        res.send({ 'message': 'downloaded', 'url': `http://localhost:3000/${req.params.name}.mp4` });
+        res.send({ 'message': 'downloaded', 'url': `/${req.params.name}.mp4` });
     });
     video.pipe(fs.createWriteStream('public/' + req.params.name + '.mp4'));
 });
 app.get('/view/:name', function(req, res) {
-    return res.redirect(`http://localhost:3000/${req.params.name}.mp4`);
+    return res.redirect(`/${req.params.name}.mp4`);
 });
 app.get('/info/:id', function(req, res) {
     function mapInfo(item) {
@@ -69,4 +69,5 @@ app.get('/audio/:id', function(req, res) {
 });
 app.listen(process.env.NODE_PORT, function() {
     console.log('YT downloader funcionando');
+
 });
