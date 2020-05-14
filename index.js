@@ -1,9 +1,10 @@
-var ex = require('express');
-var app = ex();
-var fs = require('fs');
+let ex = require('express');
+require('dotenv').config()
+let app = ex();
+let fs = require('fs');
 //npm init 
 //npm install youtube-dl
-var youtubedl = require('youtube-dl');
+let youtubedl = require('youtube-dl');
 app.use(ex.static('public'));
 app.use('/static', ex.static(__dirname + '/public'));
 app.get('/', function(req, res){
@@ -18,7 +19,7 @@ app.get('/', function(req, res){
     });
 });
 app.get('/download/:id/:name/:itag', function(req, res) {
-    var video = youtubedl(`https://www.youtube.com/watch?v=${req.params.id}`,
+    let video = youtubedl(`https://www.youtube.com/watch?v=${req.params.id}`,
         // Optional arguments passed to youtube-dl.
         [`--format=${req.params.itag}`],
         // Additional options can be given for calling `child_process.execFile()`.
@@ -52,12 +53,12 @@ app.get('/info/:id', function(req, res) {
         if (err) {
             throw err
         }
-        var formats = { id: info.id, formats: info.formats.map(mapInfo) }
+        let formats = { id: info.id, formats: info.formats.map(mapInfo) }
         return res.send(formats);
     })
 });
 app.get('/audio/:id', function(req, res) {
-    var audio = youtubedl.exec(`http://www.youtube.com/watch?v=${req.params.id}`, ['-f', 'bestaudio'], {}, function exec(err, output) {
+    let audio = youtubedl.exec(`http://www.youtube.com/watch?v=${req.params.id}`, ['-f', 'bestaudio'], {}, function exec(err, output) {
         if (err) {
             throw err
         }
@@ -66,6 +67,6 @@ app.get('/audio/:id', function(req, res) {
     });
 
 });
-app.listen(3000, function() {
+app.listen(process.env.NODE_PORT, function() {
     console.log('YT downloader funcionando');
 });
