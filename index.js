@@ -67,6 +67,6 @@ app.get('/audio/:id', function(req, res) {
     });
 
 });
-app.listen(process.env.NODE_PORT || , function() {
+app.listen(process.env.NODE_PORT, function() {
     console.log('YT downloader funcionando');
 });
