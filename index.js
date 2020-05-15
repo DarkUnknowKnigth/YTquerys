@@ -30,6 +30,12 @@ app.get('/help', function(req, res){
  * res.params.id : numeric (11 digits)
  * res.query.resolution : numeric(144|240|360|480|720|1080)
  */
+app.post('/register', function(req, res){
+    return res.json({'message':'registred'});
+});
+app.post('/login', function(req, res){
+    return res.json({'message':'logged'});
+});
 app.get('/download/:id', function(req, res) {
     let resolution= '480';
     if( req.query.resolution ){
