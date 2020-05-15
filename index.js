@@ -43,7 +43,7 @@ app.get('/download/:id', function(req, res) {
         });
         resolution = isValidRs ? req.query.resolution : '480';
     }else{
-        resolution = '480';
+        resolution ='480';
     }
     // Will be called when the download starts.
     let extension = 'mp4'
@@ -67,7 +67,7 @@ app.get('/download/:id', function(req, res) {
     youtubedl.getInfo(`http://www.youtube.com/watch?v=${req.params.id}`, function getInfo(err, info) {
         if (err) {
             return res.json({
-                'message':'Not info for your ID',
+                'message':'Not info for your Id',
                 'error':'Not found'
             });
         }
