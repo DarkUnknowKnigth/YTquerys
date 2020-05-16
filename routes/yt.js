@@ -1,8 +1,7 @@
 const ex = require('express');
-require('dotenv').config()
-const app = ex();
 const fs = require('fs');
 const youtubedl = require('youtube-dl');
+let router = ex.Router();
 let mapInfo = function (item) {
     return {
         itag: item.format_id,
@@ -13,16 +12,15 @@ let mapInfo = function (item) {
         quality: item.width ? item.width :0
     }
 }
-app.use(ex.static('public'));
-app.use('/static', ex.static(__dirname + '/public'));
-app.get('/help', function(req, res){
+
+router.get('/help', function(req, res){
     return res.json({
         message: 'Bienvenido al server de YT-Downloader',
         help:[
-            '/download/{id}?resolution={number}',
-            'download/audio/{id}',
-            '/save/{id}?type={audio|video}',
-            '/info/{id}'
+            'yt/download/{id}?resolution={number}',
+            'yt/download/audio/{id}',
+            'yt/save/{id}?type={audio|video}',
+            'yt/info/{id}'
         ]
     });
 });
@@ -30,13 +28,13 @@ app.get('/help', function(req, res){
  * res.params.id : numeric (11 digits)
  * res.query.resolution : numeric(144|240|360|480|720|1080)
  */
-app.post('/register', function(req, res){
+router.post('/register', function(req, res){
     return res.json({'message':'registred'});
 });
-app.post('/login', function(req, res){
+router.post('/login', function(req, res){
     return res.json({'message':'logged'});
 });
-app.get('/download/:id', function(req, res) {
+router.get('/download/:id', function(req, res) {
     let resolution= '480';
     if( req.query.resolution ){
         resolution =  req.query.resolution;
@@ -99,7 +97,7 @@ app.get('/download/:id', function(req, res) {
         }).pipe(fs.createWriteStream(`public/video/${req.params.id}_${resolution}.${extension}`));
     });
 });
-app.get('/save/:id', function(req, res) {
+router.get('/save/:id', function(req, res) {
     let resolution = req.query.resolution;
     if(req.params.id.length!= 11){
         return res.json({ 
@@ -118,7 +116,7 @@ app.get('/save/:id', function(req, res) {
         'error':'Internal Error'
     });
 });
-app.get('/info/:id', function(req, res) {
+router.get('/info/:id', function(req, res) {
     if(req.params.id.length!= 11){
         return res.json({ 
             'message':'Error the id must contain 11 characters 😫 id',
@@ -133,7 +131,7 @@ app.get('/info/:id', function(req, res) {
         return res.send(formats);
     });
 });
-app.get('/download/audio/:id', function(req, res) {
+router.get('/download/audio/:id', function(req, res) {
     const id = req.params.id;
     if(id.length != 11){
         return res.json({ 
@@ -162,6 +160,6 @@ app.get('/download/audio/:id', function(req, res) {
         }
     });    
 });
-app.listen(process.env.NODE_PORT, function() {
-    console.log('YT downloader funcionando');
-});
+module.exports = router;
+
+
