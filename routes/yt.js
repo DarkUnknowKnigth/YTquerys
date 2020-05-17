@@ -1,6 +1,9 @@
 const ex = require('express');
 const fs = require('fs');
+const path = require('path');
+const Song = require('../models/song');
 const youtubedl = require('youtube-dl');
+const dir = path.resolve(__dirname, '..');
 let router = ex.Router();
 let mapInfo = function (item) {
     return {
@@ -20,7 +23,9 @@ router.get('/help', function(req, res){
             'yt/download/{id}?resolution={number}',
             'yt/download/audio/{id}',
             'yt/save/{id}?type={audio|video}',
-            'yt/info/{id}'
+            'yt/info/{id}',
+            '/static/audio/{id}.mp3',
+            '/static/video/{id}_{resolution}.mp3'
         ]
     });
 });
@@ -60,7 +65,7 @@ router.get('/download/:id', function(req, res) {
             'error':'Internal Error'
         });
     }
-    if(fs.existsSync(`${__dirname}/public/video/${req.params.id}_${resolution}.mp4`)){
+    if(fs.existsSync(`${dir}/public/video/${req.params.id}_${resolution}.mp4`)){
         res.send({ 
             'message': 'downloaded', 
             'path': `view/${req.params.id}?resolution=${resolution}&type=video`,
@@ -77,7 +82,7 @@ router.get('/download/:id', function(req, res) {
         }
         formats = info.formats.map(mapInfo).sort( (i,j) => i.resolution - j.resolution  ) ;
         let crinfo = formats.filter( info => info.resolution.includes(resolution) && info.extension=='mp4' ).pop();
-        let video = youtubedl(`https://www.youtube.com/watch?v=${req.params.id}`,[`--format=${crinfo.itag > 0?crinfo.itag:18}`],{ cwd: __dirname });
+        let video = youtubedl(`https://www.youtube.com/watch?v=${req.params.id}`,[`--format=${crinfo.itag > 0?crinfo.itag:18}`],{ cwd: dir });
         video.on('info', function(info) {
             console.log('Download started');
             console.log('filename: ' + info._filename);
@@ -106,15 +111,22 @@ router.get('/save/:id', function(req, res) {
         });
     }
     if(req.query.type=="audio"){
-        res.download(`${__dirname}/public/audio/${req.params.id}.mp3`);
+        Song.get({'id':req.params.id}, function(err , song){
+            if(err){
+                throw err;
+            }
+            res.download(`${dir}/public/audio/${req.params.id}.mp3`, song.title+'.mp3' );
+        });
     }
-    if(req.query.type=="video"){
-        return res.download(`${__dirname}/public/video/${req.params.id}_${resolution}.mp4`);
+    else if(req.query.type=="video"){
+        return res.download(`${dir}/public/video/${req.params.id}_${resolution}.mp4`,);
     }
-    return res.json({ 
-        'message':'Error can not find type on your request 💀',
-        'error':'Internal Error'
-    });
+    else{
+        return res.json({ 
+            'message':'Error can not find type on your request 💀',
+            'error':'Internal Error'
+        });
+    }
 });
 router.get('/info/:id', function(req, res) {
     if(req.params.id.length!= 11){
@@ -139,26 +151,65 @@ router.get('/download/audio/:id', function(req, res) {
             'error':'Internal Error'
         });
     }
-    if(fs.existsSync(`${__dirname}/public/audio/${id}.mp3`)){
-        return res.json({
-            'message':'Downloaded',
-            'path':`/view/${id}?type=audio`,
-        });
-    }
-    youtubedl.exec(`http://www.youtube.com/watch?v=${req.params.id}`, ['-x', '--audio-format', 'mp3','-o' ,`public/audio/${id}.mp3`],{}, function exec(err, output) {
-        if (err) {
-            if(fs.existsSync(`${__dirname}/public/audio/${id}.mp3`)){
-                return res.json({
-                    'message':'Downloaded',
-                    'path':`/view/${id}?type=audio`,
+    if(fs.existsSync(`${dir}/public/audio/${id}.mp3`)){
+        Song.get({'id': id}, function(err, song) {
+            if(err) {
+                res.json({
+                    error: err
+                })
+            }
+            return res.json({
+                'song':song,
+                'message':'Downloaded On Server 😁😁😁'
+            });
+        }); 
+    }else{
+        youtubedl.exec(`http://www.youtube.com/watch?v=${id}`, ['-x', '--audio-format', 'mp3','-o' ,`public/audio/${id}.mp3`],{}, function exec(err, output) {
+            if (err) {
+                youtubedl.getInfo(`http://www.youtube.com/watch?v=${id}`, function getInfo(err, info) {
+                    if (err) {
+                        return res.json({
+                            'message':'Error when try get info of audio 💀 id:'+id,
+                            'error':'Internal Error'
+                        });
+                    }
+                    let song = {
+                        id:id,
+                        title: info.title,
+                        artist: info.artist,
+                        extension:'mp3',
+                        duration: info.duration,
+                        path:`/static/audio/${id}.mp3`,
+                        pathDownload:`/save/${id}?type=audio`,
+                        imagePath:info.thumbnails[0].url    
+                    };
+                    Song.create(song, function(err, song) {
+                        if(err) {
+                            res.json({
+                                'error' : err
+                            });
+                        }
+                        Song.get({}, function(err, songs) {
+                            if(err) {
+                                res.json({
+                                    error: err
+                                })
+                            }
+                            return res.json({
+                                'song':song,
+                                'songs':songs,
+                                'message':'On Server 😁😁😁',
+                                'path':`/save/${id}?type=audio`,
+                            });
+                        }); 
+                    });
                 });
             }
-            return res.json({ 
-                'message':'Error when try convert audio 💀 id:'+id,
-                'error':'Internal Error'
-            });
-        }
-    });    
+            else{
+                res.send('Error desconocido');
+            }
+        });    
+    }
 });
 module.exports = router;
 

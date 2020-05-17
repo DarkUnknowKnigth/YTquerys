@@ -1,19 +1,24 @@
 const ex = require('express');
 const mongo = require('./mongo');
 const yt = require('./routes/yt');
+const song = require('./routes/songs');
+const cors = require('cors')
 require('dotenv').config();
-var bodyParser = require('body-parser'); // 
+const bodyParser = require('body-parser'); // 
 const app = ex();
-app.use(ex.static('public'));
-app.use('/static', ex.static(__dirname + '/public'));
+const corsOptions = {
+    origin: '*',
+    optionsSuccessStatus: 200 // some legacy browsers (IE11, various SmartTVs) choke on 204
+}
+app.use(cors(corsOptions));
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
+app.use(ex.static('public'));
+app.use('/static', ex.static(__dirname + '/public'));
 app.use('/yt',yt);
-app.get('*', function(req , res){
-    return res.json({
-        'message':'Route Dosent Exist',
-        'error':'Not Route'
-    })
+app.use('/songs',song);
+app.get('*',function(req, res){
+    res.json({'message':'not found 🙄🙄'});
 });
 app.listen(process.env.NODE_PORT, function() {
     mongo.connect(process.env.MONGO_URL, {useNewUrlParser: true}, err => {
