@@ -3,12 +3,12 @@ let songSchema = new mongoose.Schema({
     title: {
       type: String,
       unique : false,
-      required : true
+      required : false
     },
     artist: {
       type: String,
       unique : false,
-      required : true
+      required : false
     },
     extension: String,
     duration: String,

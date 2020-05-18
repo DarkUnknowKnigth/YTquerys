@@ -2,6 +2,7 @@ const ex = require('express');
 const mongo = require('./mongo');
 const yt = require('./routes/yt');
 const song = require('./routes/songs');
+const videos = require('./routes/videos');
 const cors = require('cors')
 require('dotenv').config();
 const bodyParser = require('body-parser'); // 
@@ -17,6 +18,7 @@ app.use(ex.static('public'));
 app.use('/static', ex.static(__dirname + '/public'));
 app.use('/yt',yt);
 app.use('/songs',song);
+app.use('/videos',videos);
 app.get('*',function(req, res){
     res.json({'message':'not found 🙄🙄'});
 });

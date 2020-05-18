@@ -18,7 +18,7 @@ router.get('/', function(req, res){
     }); 
 });
 router.get('/:id', function(){
-    Song.get({'id': req.params.id}, function(err, song) {
+    Song.findOne({'id': req.params.id}, function(err, song) {
         if(err) {
             res.json({
                 error: err

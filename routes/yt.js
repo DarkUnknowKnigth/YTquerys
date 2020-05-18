@@ -2,6 +2,7 @@ const ex = require('express');
 const fs = require('fs');
 const path = require('path');
 const Song = require('../models/song');
+const Video = require('../models/video');
 const youtubedl = require('youtube-dl');
 const dir = path.resolve(__dirname, '..');
 let router = ex.Router();
@@ -73,34 +74,131 @@ router.get('/download/:id', function(req, res) {
             'file':file
         });
     }
-    youtubedl.getInfo(`http://www.youtube.com/watch?v=${req.params.id}`, function getInfo(err, info) {
-        if (err) {
-            return res.json({
-                'message':'Not info for your Id',
-                'error':'Not found'
-            });
-        }
-        formats = info.formats.map(mapInfo).sort( (i,j) => i.resolution - j.resolution  ) ;
-        let crinfo = formats.filter( info => info.resolution.includes(resolution) && info.extension=='mp4' ).pop();
-        let video = youtubedl(`https://www.youtube.com/watch?v=${req.params.id}`,[`--format=${crinfo.itag > 0?crinfo.itag:18}`],{ cwd: dir });
-        video.on('info', function(info) {
-            console.log('Download started');
-            console.log('filename: ' + info._filename);
-            console.log('size: ' + info.size);
-            file = info._filename;
-            extension = info._filename.split('.')[1];
-            size = info.size;
+    else {
+        let id = req.params.id;
+        Video.findOne({'id':req.params.id},function (err, videoOld){
+            if(err){
+               res.json({
+                   'error':err
+               });
+            } 
+            else {
+                if(videoOld != null){  
+                    console.log('Exist but not resolution');  
+                    youtubedl.getInfo(`http://www.youtube.com/watch?v=${req.params.id}`, function getInfo(err, info) {
+                        if (err) {
+                            return res.json({
+                                'message':'Not info for your Id',
+                                'error':'Not found'
+                            });
+                        }else{
+                            formats = info.formats.map(mapInfo).sort( (i,j) => i.resolution - j.resolution  ) ;
+                            let crinfo = formats.filter( info => info.resolution.includes(resolution) && info.extension=='mp4' ).pop();
+                            let video = youtubedl(`https://www.youtube.com/watch?v=${req.params.id}`,[`--format=${crinfo.itag > 0?crinfo.itag:18}`],{ cwd: dir });
+                            video.on('info', function(info) {
+                                console.log('Download started');
+                                console.log('filename: ' + info._filename);
+                                console.log('size: ' + info.size);
+                                file = info._filename;
+                                extension = info._filename.split('.')[1];
+                                size = info.size;
+                            });
+                            video.on('end', () => {
+                                console.log('Disponible');
+                                let newRes = [...videoOld.resolutions,Number.parseInt(resolution)];
+                                Video.update({'id':id},{
+                                    'resolutions':newRes
+                                }, (err, updatedVideo) =>{
+                                    if(err){
+                                        return res.json({
+                                            'message':'Not updated videos resolutions',
+                                            'error':'Not Update'
+                                        });
+                                    }
+                                    Video.get({}, function(err, videos) {
+                                        if(err) {
+                                            res.json({
+                                                error: err
+                                            })
+                                        }else{
+                                            return res.json({
+                                                'video':updatedVideo,
+                                                'videos':videos,
+                                                'size':size,
+                                                'file':file,
+                                                'message':'On Server 😁😁😁',
+                                                'path':`/save/${id}?type=video`,
+                                            });
+                                        }
+                                    }); 
+                                })
+                            }).pipe(fs.createWriteStream(`public/video/${req.params.id}_${resolution}.${extension}`));
+                        }
+                    });
+               } else {
+                    console.log('No exists');  
+                    youtubedl.getInfo(`http://www.youtube.com/watch?v=${req.params.id}`, function getInfo(err, info) {
+                        if (err) {
+                            return res.json({
+                                'message':'Not info for your Id',
+                                'error':'Not found'
+                            });
+                        }else{
+                            formats = info.formats.map(mapInfo).sort( (i,j) => i.resolution - j.resolution  ) ;
+                            let crinfo = formats.filter( info => info.resolution.includes(resolution) && info.extension=='mp4' ).pop();
+                            let video = youtubedl(`https://www.youtube.com/watch?v=${req.params.id}`,[`--format=${crinfo.itag > 0?crinfo.itag:18}`],{ cwd: dir });
+                            video.on('info', function(info) {
+                                console.log('Download started');
+                                console.log('filename: ' + info._filename);
+                                console.log('size: ' + info.size);
+                                file = info._filename;
+                                extension = info._filename.split('.')[1];
+                                size = info.size;
+                            });
+                            video.on('end', () => {
+                                console.log('Disponible');
+                                let data = {
+                                    id:id,
+                                    title: info.title?info.title:'Unknown',
+                                    artist: info.artist?info.artist:'Unknown',
+                                    extension:'mp4',
+                                    duration: info.duration,
+                                    path:`/static/video/${id}.mp4`,
+                                    pathDownload:`/save/${id}?type=video`,
+                                    imagePath:info.thumbnails[0].url,
+                                    resolutions:[Number.parseInt(resolution)]    
+                                };
+                                Video.create(data, function(err, newVideo) {
+                                    if(err) {
+                                        res.json({
+                                            'error' : err
+                                        });
+                                    }else{
+                                        Video.get({}, function(err, videos) {
+                                            if(err) {
+                                                res.json({
+                                                    error: err
+                                                })
+                                            }else{
+                                                return res.json({
+                                                    'video':newVideo,
+                                                    'videos':videos,
+                                                    'size':size,
+                                                    'file':file,
+                                                    'message':'On Server 😁😁😁',
+                                                    'path':`/save/${id}?type=video`,
+                                                });
+                                            }
+                                        }); 
+                                    }
+                                });
+                            }).pipe(fs.createWriteStream(`public/video/${req.params.id}_${resolution}.${extension}`));
+                        }
+                    });
+                }
+            }
         });
-        video.on('end', () => {
-            console.log('Disponible');
-            res.send({ 
-                'message': 'downloaded', 
-                'path': `view/${req.params.id}?resolution=${resolution}&type=video`,
-                'size':size,
-                'file':file
-            });
-        }).pipe(fs.createWriteStream(`public/video/${req.params.id}_${resolution}.${extension}`));
-    });
+    }
 });
 router.get('/save/:id', function(req, res) {
     let resolution = req.query.resolution;
@@ -111,15 +209,40 @@ router.get('/save/:id', function(req, res) {
         });
     }
     if(req.query.type=="audio"){
-        Song.get({'id':req.params.id}, function(err , song){
+        Song.findOne({'id':req.params.id}, function(err , song){
             if(err){
-                throw err;
+                return res.json({ 
+                    'message':'Error song not found 😫',
+                    'error':'Internal Error'
+                });
             }
-            res.download(`${dir}/public/audio/${req.params.id}.mp3`, song.title+'.mp3' );
+            res.download(`${dir}/public/audio/${song.id}.mp3`);
         });
     }
     else if(req.query.type=="video"){
-        return res.download(`${dir}/public/video/${req.params.id}_${resolution}.mp4`,);
+        Video.findOne({'id':req.params.id},(err , video)=>{
+            if(err){
+                return res.json({ 
+                    'message':'Error Video not Found 😫',
+                    'error':'Internal Error'
+                });
+            }
+            if(video && video.resolutions.length > 0){
+                let validResolution = ['144','240','360','480','720','1080'];
+                let index = validResolution.indexOf(resolution);
+                let cres = video.resolutions.filter(resol => validResolution[ index - 1] <= Number.parseInt(resolution) || validResolution[index + 1] >= Number.parseInt(resolution));
+                if(cres.length > 0){
+                    return res.download(`${dir}/public/video/${req.params.id}_${cres[0]}.mp4`);
+                } else{
+                    return res.download(`${dir}/public/video/${req.params.id}_${video.resolutions[0]}.mp4`)
+                }
+            }else{
+                return res.json({ 
+                    'message':'Error No Found videos with your id 😫',
+                    'error':'Internal Error'
+                });
+            }
+        });
     }
     else{
         return res.json({ 
@@ -146,7 +269,7 @@ router.get('/info/:id', function(req, res) {
 router.get('/download/audio/:id', function(req, res) {
     const id = req.params.id;
     if(id.length != 11){
-        return res.json({ 
+        return res.status(500).json({ 
             'message':'Error the id must contain 11 characters 😫 id:'+id,
             'error':'Internal Error'
         });
@@ -158,10 +281,19 @@ router.get('/download/audio/:id', function(req, res) {
                     error: err
                 })
             }
-            return res.json({
-                'song':song,
-                'message':'Downloaded On Server 😁😁😁'
-            });
+            Song.get({}, function(err, songs) {
+                if(err) {
+                    res.json({
+                        error: err
+                    })
+                }
+                return res.json({
+                    'song':song,
+                    'songs':songs,
+                    'message':'Downloaded On Server 😁😁😁',
+                    'path':`/save/${id}?type=audio`,
+                });
+            }); 
         }); 
     }else{
         youtubedl.exec(`http://www.youtube.com/watch?v=${id}`, ['-x', '--audio-format', 'mp3','-o' ,`public/audio/${id}.mp3`],{}, function exec(err, output) {
@@ -175,8 +307,8 @@ router.get('/download/audio/:id', function(req, res) {
                     }
                     let song = {
                         id:id,
-                        title: info.title,
-                        artist: info.artist,
+                        title: info.title?info.title:'Unknown',
+                        artist: info.artist?info.artist:'Unknown',
                         extension:'mp3',
                         duration: info.duration,
                         path:`/static/audio/${id}.mp3`,
