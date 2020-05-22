@@ -11,10 +11,11 @@ router.get('/', function(req, res){
             res.json({
                 error: err
             });
+        }else{
+            res.json({
+                songs: songs
+            });
         }
-        res.json({
-            songs: songs
-        });
     }); 
 });
 router.get('/:id', function(){
@@ -23,10 +24,11 @@ router.get('/:id', function(){
             res.json({
                 error: err
             });
+        }else{
+            res.json({
+                song: song
+            });
         }
-        res.json({
-            song: song
-        });
     }); 
 });
 router.delete('/:id', function(req, res){

@@ -1,4 +1,5 @@
-const mongoose = require('mongoose');
+const mongoose = require('../mongo');
+const uniqueValidator = require('mongoose-unique-validator');
 let videoSchema = new mongoose.Schema({
     title: {
       type: String,
@@ -53,4 +54,5 @@ videoSchema.statics = {
         this.findOneAndDelete(query,cb);
     }
 }
+videoSchema.plugin(uniqueValidator);
 module.exports = mongoose.model('Video', videoSchema);

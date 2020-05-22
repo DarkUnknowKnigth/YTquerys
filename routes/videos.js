@@ -10,10 +10,11 @@ router.get('/', function(req, res){
             res.json({
                 error: err
             });
+        }else{
+            res.json({
+                videos: videos
+            });
         }
-        res.json({
-            videos: videos
-        });
     }); 
 });
 router.get('/:id', function(){
@@ -22,10 +23,11 @@ router.get('/:id', function(){
             res.json({
                 error: err
             });
+        }else{
+            res.json({
+                video: video
+            });
         }
-        res.json({
-            video: video
-        });
     }); 
 });
 router.delete('/:id', function(req, res){

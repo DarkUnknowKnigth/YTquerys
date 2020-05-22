@@ -1,4 +1,5 @@
-const mongoose = require('mongoose');
+const mongoose = require('../mongo');
+const uniqueValidator = require('mongoose-unique-validator');
 let songSchema = new mongoose.Schema({
     title: {
       type: String,
@@ -52,4 +53,6 @@ songSchema.statics = {
         this.findOneAndDelete(query,cb);
     }
 }
+
+songSchema.plugin(uniqueValidator);
 module.exports = mongoose.model('Song', songSchema);
