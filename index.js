@@ -11,9 +11,10 @@ const storage = multer.diskStorage({
     destination: __dirname + '/public/image',
     filename: function(req, file , cb){
         if(req.params.id){
-            cb(null, req.params.id)
+            cb(null, `${req.params.id}.${file.originalname.split('.').pop()}`);
+        }else{
+            cb('Not req id',null);
         }
-        cb('Not req file',null)
     }
 });
 const upload = multer({storage:storage});
@@ -58,7 +59,7 @@ app.post('/login', function( req , res){
                   req.session.uid = auth._id;
                   res.json({
                       user:auth,
-                      message:'ok'
+                      message:'logged'
                   });
               }
           }
@@ -81,7 +82,7 @@ app.post('/register', function(req, res){
           }
           User.create(userData, function(err, user){
               if(err){
-                  return res.json({error: err});
+                res.json({error: err});
               }else{
                   res.status(201).json({
                       message: 'User Created',
@@ -111,37 +112,51 @@ app.post('/register', function(req, res){
   }
 });
 app.post('/photo/:id', upload.single('photo'), (req, res) => {
-  if(req.file && req.params.id) {
-      User.findOne({_id:req.params.id},function(err, user){
-          if(err){
-              return res.json({
-                  error: err
-              });
-          }
-          User.update({_id:req.params.id},{},function(err , updatedUser){
-              
-          })
-
-      });
-      res.json({
-          message:'Photo saved'
-      });
-  }
-  else{
+    if(req.file) {
+      if(req.params.id){
+        User.findOne({_id:req.params.id},function(err, user){
+            if(err){
+                return res.json({
+                    error: err
+                });
+            }
+            User.update({_id:req.params.id},{'photo':`/static/image/${req.params.id}.${req.file.originalname.split('.').pop()}`},function(err , updatedUser){
+                if(err){
+                    res.json({
+                        error: err
+                    });
+                }
+                res.json({
+                    message: 'Updated',
+                    user: updatedUser
+                });
+            })
+  
+        });
+      }else{
+        res.json({
+            error: 'No uid'
+        });
+      }
+    }
+    else{
       res.json({
           error: 'No image'
       })
-  };
+    }
 });
 app.get('/logout', function(req, res, next) {
     if (req.session) {
-      console.log(req.session);
       // delete session object
       req.session.destroy(function(err) {
         if(err) {
-          return next(err);
+         res.json({
+             error:err
+         });
         } else {
-          return res.redirect('/');
+            res.json({
+                message:'Logged out'
+            });
         }
       });
     }
