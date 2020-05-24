@@ -164,7 +164,9 @@ app.get('/logout', function(req, res, next) {
 app.get('*',function(req, res){
     res.json({'message':'not found 🙄🙄'});
 });
-app.listen(process.env.NODE_PORT, function() {
+let server_port = process.env.NODE_PORT || process.env.PORT || 80;
+let server_host = '0.0.0.0';
+app.listen(server_port, server_host, function() {
     mongo.connect(process.env.MONGO_URL, {useNewUrlParser: true, useUnifiedTopology: true}, err => {
         if(err){
             throw err;
