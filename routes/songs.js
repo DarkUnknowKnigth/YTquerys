@@ -38,24 +38,28 @@ router.delete('/:id', function(req, res){
                 error: 'Not exist'
             });
         }else{
+            let err = []; 
             if(song){
                 try {
-                    fs.unlinkSync(dir+song.path.replace('static','public'));
-                    Song.delete({'id':req.params.id}, function(err){
-                        if(err){
-                            res.json({
-                                error: 'Canot delete'
-                            });
-                        }
+                    if(fs.statSync(dir+song.path.replace('static','public'))){
+                        fs.unlinkSync(dir+song.path.replace('static','public'));
+                    } else{
+                        err.push("Cannot find your file");
+                    }
+                } catch(err) {
+                   err.push( 'Wrong server path access');
+                }
+                Song.delete({'id':req.params.id}, function(err){
+                    if(err){
                         res.json({
-                            'message':'deleted',
+                            error: 'Canot delete'
                         });
-                    });
-                  } catch(err) {
+                    }
                     res.json({
-                        error: 'Wrong server path access'
+                        'message':'deleted',
+                        'error':err
                     });
-                  }
+                });
             }else{
                 res.json({
                     'message':'not found',
