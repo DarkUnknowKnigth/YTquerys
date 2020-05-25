@@ -38,16 +38,17 @@ router.delete('/:id', function(req, res){
                 error: 'Not exist'
             });
         }else{
-            let err = []; 
+            let err_ = []; 
             if(song){
                 try {
                     if(fs.statSync(dir+song.path.replace('static','public'))){
                         fs.unlinkSync(dir+song.path.replace('static','public'));
                     } else{
-                        err.push("Cannot find your file");
+                        err_.push("Cannot find your file");
                     }
                 } catch(err) {
-                   err.push( 'Wrong server path access');
+                   err_.push( 'Wrong server path access');
+                   err_.push( err );
                 }
                 Song.delete({'id':req.params.id}, function(err){
                     if(err){
@@ -57,7 +58,7 @@ router.delete('/:id', function(req, res){
                     }
                     res.json({
                         'message':'deleted',
-                        'error':err
+                        'error': err_
                     });
                 });
             }else{
