@@ -290,7 +290,7 @@ router.get('/download/audio/:id', function(req, res) {
             }); 
         }); 
     }else{
-        youtubedl.exec(`http://www.youtube.com/watch?v=${id}`, ['-x', '--audio-format', 'mp3','-o' ,`public/audio/${id}.mp3`],{}, function exec(err, output) {
+        youtubedl.exec(`http://www.youtube.com/watch?v=${id}`, ['-x','--audio-format','mp3','-o' ,`public/audio/${id}.mp3`,'--format','mp3'],{}, function exec(err, output) {
             if (err) {
                 youtubedl.getInfo(`http://www.youtube.com/watch?v=${id}`, function getInfo(err, info) {
                     if (err) {
@@ -298,37 +298,40 @@ router.get('/download/audio/:id', function(req, res) {
                             'message':'Error when try get info of audio 💀 id:'+id,
                             'error':'Internal Error'
                         });
-                    }
-                    let song = {
-                        id:id,
-                        title: info.title?info.title:'Unknown',
-                        artist: info.artist?info.artist:'Unknown',
-                        extension:'mp3',
-                        duration: info.duration,
-                        path:`/static/audio/${id}.mp3`,
-                        pathDownload:`/save/${id}?type=audio`,
-                        imagePath:info.thumbnails[0].url    
-                    };
-                    Song.create(song, function(err, song) {
-                        if(err) {
-                            res.json({
-                                'error' : err
-                            });
-                        }
-                        Song.get({}, function(err, songs) {
+                    }else{
+                        let song = {
+                            id:id,
+                            title: info.title?info.title:'Unknown',
+                            artist: info.artist?info.artist:'Unknown',
+                            extension:'mp3',
+                            duration: info.duration,
+                            path:`/static/audio/${id}.mp3`,
+                            pathDownload:`/save/${id}?type=audio`,
+                            imagePath:info.thumbnails[0].url    
+                        };
+                        Song.create(song, function(err, song) {
                             if(err) {
                                 res.json({
-                                    error: err
-                                })
+                                    'error' : err
+                                });
+                            }else{
+                                Song.get({}, function(err, songs) {
+                                    if(err) {
+                                        res.json({
+                                            error: err
+                                        })
+                                    }else{
+                                        res.json({
+                                            'song':song,
+                                            'songs':songs,
+                                            'message':'On Server 😁😁😁',
+                                            'path':`/save/${id}?type=audio`,
+                                        });
+                                    }
+                                }); 
                             }
-                            res.json({
-                                'song':song,
-                                'songs':songs,
-                                'message':'On Server 😁😁😁',
-                                'path':`/save/${id}?type=audio`,
-                            });
-                        }); 
-                    });
+                        });
+                    }
                 });
             }
             else{

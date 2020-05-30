@@ -171,7 +171,7 @@ app.listen(server_port, server_host, function() {
         if(err){
             throw err;
         }
-        console.log(`Mongo running ${process.env.MONGO_URL}`);
+        console.log(`Mongo running`);
     });
-    console.log('YT downloader funcionando');
+    console.log('YT downloader running');
 });
