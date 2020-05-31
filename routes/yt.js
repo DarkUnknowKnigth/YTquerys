@@ -4,6 +4,9 @@ const path = require('path');
 const Song = require('../models/song');
 const Video = require('../models/video');
 const youtubedl = require('youtube-dl');
+const ffmpeg = require('fluent-ffmpeg');
+const readline = require('readline');
+const ytdl = require('ytdl-core');
 const dir = path.resolve(__dirname, '..');
 let router = ex.Router();
 let mapInfo = function (item) {
@@ -287,7 +290,7 @@ router.get('/download/audio/:id', function(req, res) {
             }); 
         }); 
     }else{
-        youtubedl.exec(`http://www.youtube.com/watch?v=${id}`, ['-x', '--audio-format','mp3','-o' ,`/public/audio/${id}.mp3`],{}, function exec(err, output) {
+        youtubedl.exec(`http://www.youtube.com/watch?v=${id}`, ['-x', '--audio-format','mp3','-o' ,`public/audio/${id}.mp3`],{}, function exec(err, output) {
             console.log(err);
             console.log(output);
             youtubedl.getInfo(`http://www.youtube.com/watch?v=${id}`, function getInfo(err, info) {
@@ -297,7 +300,6 @@ router.get('/download/audio/:id', function(req, res) {
                         'error':'Internal Error'
                     });
                 }else{
-                    console.log(output);
                     let song = {
                         id:id,
                         title: info.title?info.title:'Unknown',
