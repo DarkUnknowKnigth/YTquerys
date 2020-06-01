@@ -31,6 +31,7 @@ router.get('/:id', function(){
     }); 
 });
 router.delete('/:id', function(req, res){
+    let erros = [];
     Video.findOne({'id':req.params.id}, function(err, video) {
         if(err) {
             res.json({
@@ -42,24 +43,26 @@ router.delete('/:id', function(req, res){
                     video.resolutions.forEach( resolution => {
                         fs.unlinkSync(dir+`/public/video/${video.id}_${resolution}.mp4`);
                     });
-                    Video.delete({'id':req.params.id}, function(err){
-                        if(err){
-                            res.json({
-                                error: 'Canot delete'
-                            });
-                        }
+                } catch(err) {
+                    erros.push('Wrong server path access');    
+                    erros.push(dir+`/public/video/${video.id}_${resolution}.mp4 NOT FOUND`);    
+                }
+                Video.delete({'id':req.params.id}, function(err){
+                    if(err){
                         res.json({
-                            'message':'deleted',
+                            error: 'Canot delete',
+                            error:erros
                         });
-                    });
-                  } catch(err) {
+                    }
                     res.json({
-                        error: 'Wrong server path access'
+                        'message':'deleted',
+                        erros:erros
                     });
-                  }
+                });
             }else{
                 res.json({
                     'message':'not found',
+                    erros:erros
                 })
             }
         }
