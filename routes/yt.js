@@ -291,8 +291,13 @@ router.get('/download/audio/:id', function(req, res) {
         }); 
     }else{
         youtubedl.exec(`http://www.youtube.com/watch?v=${id}`, ['-x', '--audio-format','mp3','-o' ,`public/audio/${id}.mp3`],{}, function exec(err, output) {
-            console.log(err);
-            console.log(output);
+            if(err){
+                console.log(err);
+            }else{
+                if(output){
+                    console.log(output);
+                }
+            }
             youtubedl.getInfo(`http://www.youtube.com/watch?v=${id}`, function getInfo(err, info) {
                 if (err) {
                     res.json({
