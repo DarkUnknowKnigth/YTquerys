@@ -6,4 +6,3 @@ package-lock.json
 /public/image/*.png
 /public/image/*.JPEG
 /public/image/*.gif
-.env
