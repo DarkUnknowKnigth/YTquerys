@@ -39,13 +39,15 @@ router.delete('/:id', function(req, res){
             });
         }else{
             if(video){
-                try {
-                    video.resolutions.forEach( resolution => {
-                        fs.unlinkSync(dir+`/public/video/${video.id}_${resolution}.mp4`);
-                    });
-                } catch(err) {
-                    erros.push('Wrong server path access');    
-                    erros.push(dir+`/public/video/${video.id}_${resolution}.mp4 NOT FOUND`);    
+                if(video.resolutions.length>0){
+                    try {
+                        video.resolutions.forEach( resolution => {
+                            fs.unlinkSync(dir+`/public/video/${video.id}_${resolution}.mp4`);
+                        });
+                    } catch(err) {
+                        erros.push('Wrong server path access');    
+                        erros.push(dir+`/public/video/${video.id}_${video.resolutions[0]}.mp4 NOT FOUND`);    
+                    }
                 }
                 Video.delete({'id':req.params.id}, function(err){
                     if(err){

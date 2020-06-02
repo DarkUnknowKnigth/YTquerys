@@ -290,11 +290,11 @@ router.get('/download/audio/:id', function(req, res) {
             }); 
         }); 
     }else{
-        youtubedl.exec(`http://www.youtube.com/watch?v=${id}`, ['-x', '-format','mp3','-o' ,`public/audio/${id}.mp3`],{}, function exec(noErr, output) {
+        youtubedl.exec(`http://www.youtube.com/watch?v=${id}`, ['-x', '--audio-format', 'mp3','-o' ,`public/audio/${id}.mp3`],{}, function exec(noErr, output) {
             if(noErr){
-                
+                console.log(noErr);
+                console.log(output);
                 youtubedl.getInfo(`http://www.youtube.com/watch?v=${id}`, function getInfo(err, info) {
-                    console.log(err);
                     if (err) {
                         res.json({
                             'message':'Error when try get info of audio 💀 id:'+id,
@@ -321,7 +321,7 @@ router.get('/download/audio/:id', function(req, res) {
                                     if(err) {
                                         res.json({
                                             error: err
-                                        })
+                                        });
                                     }else{
                                         res.json({
                                             'song':song,
@@ -334,6 +334,10 @@ router.get('/download/audio/:id', function(req, res) {
                             }
                         });
                     }
+                });
+            }else{
+                res.json({
+                    error: output
                 });
             }
         });    
