@@ -290,7 +290,7 @@ router.get('/download/audio/:id', function(req, res) {
             }); 
         }); 
     }else{
-        youtubedl.exec(`http://www.youtube.com/watch?v=${id}`, ['-x', '--audio-format', 'mp3','-o' ,`public/audio/${id}.mp3`],{}, function exec(err, output) {
+        youtubedl.exec(`http://www.youtube.com/watch?v=${id}`, ['-x', '--audio-format','mp3', '-f', 'bestaudio','-o' ,`public/audio/${id}.%(ext)s`],{}, function exec(err, output) {
             console.error(err);
             console.warn(output);
             youtubedl.getInfo(`http://www.youtube.com/watch?v=${id}`, function getInfo(err, info) {
