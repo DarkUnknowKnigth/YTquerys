@@ -1,5 +1,5 @@
 module.exports  = function requiresLogin(req, res, next) {
-    if (req.session && req.session.uid && req.session.user) {
+    if (req.body.session && req.body.session.uid && req.body.user) {
       return next();
     } else {
       req.session.destroy();

@@ -43,7 +43,8 @@ router.put('/:id', function(req, res){
                 res.json({
                     message:'updated',
                     user:updatedUser,
-                    users: users
+                    users: users,
+                    session: req.body.session
                 });
             }); 
         }
