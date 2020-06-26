@@ -80,6 +80,7 @@ app.post('/register', function(req, res){
               email: req.body.email,
               name: req.body.name,
               password: req.body.password,
+              role: 0
           }
           User.create(userData, function(err, user){
               if(err){

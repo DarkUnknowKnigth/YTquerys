@@ -17,7 +17,12 @@ let userSchema = new mongoose.Schema({
         unique: false,
         required:true,
     },
-    photo:String
+    photo:String,
+    role : {
+        type: Number,
+        unique: false,
+        required: true
+    }
   });
 
 userSchema.statics = {
