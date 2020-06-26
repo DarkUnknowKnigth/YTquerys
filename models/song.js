@@ -36,7 +36,6 @@ songSchema.statics = {
         var song = new this(data);
         song.save(cb);
     },
-
     get: function(query, cb) {
         this.find(query, cb);
     },
