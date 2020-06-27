@@ -44,9 +44,6 @@ router.delete('/:id', function(req, res){
                 file.delete(function(err, apiResponse) {
                     console.log(err);
                 });
-                file.delete().then(function(data) {
-                    const apiResponse = data[0];
-                });
                 try {
                     if(fs.statSync(dir+song.path.replace('static','public'))){
                         fs.unlinkSync(dir+song.path.replace('static','public'));
