@@ -1,12 +1,30 @@
 const ex = require('express');
 const mongo = require('./mongo');
-const yt = require('./routes/yt');
+const yt = require('./routes/yt')
 const songs = require('./routes/songs');
 const videos = require('./routes/videos');
 const users = require('./routes/users');
 const session = require('express-session');
 const User = require('./models/user');
 const multer = require('multer');
+const admin = require('firebase-admin');
+const serviceAccount = require('./yt-downloader-bc6b0-firebase-adminsdk-xcvat-651c512204.json');
+admin.initializeApp({
+    credential: admin.credential.cert({
+        'type':process.env.type,
+        'project_id':process.env.project_id,
+        'private_key_id':process.env.private_key_id,
+        'private_key':process.env.private_key,
+        'client_email':process.env.client_email,
+        'client_id':process.env.client_id,
+        'auth_uri':process.env.auth_uri,
+        'token_uri':process.env.token_uri,
+        'auth_provider_x509_cert_url':process.env.auth_provider_x509_cert_url,
+        'client_x509_cert_url':process.env.client_x509_cert_url
+    }),
+    storageBucket: 'gs://yt-downloader-bc6b0.appspot.com'
+});
+bucket = admin.storage().bucket();
 const storage = multer.diskStorage({
     destination: __dirname + '/public/image',
     filename: function(req, file , cb){
@@ -115,36 +133,55 @@ app.post('/register', function(req, res){
 });
 app.post('/photo/:id', upload.single('photo'), (req, res) => {
     if(req.file) {
-      if(req.params.id){
-        User.findOne({_id:req.params.id},function(err, user){
-            if(err){
-                return res.json({
-                    error: err
-                });
-            }
-            User.update({_id:req.params.id},{'photo':`/static/image/${req.params.id}.${req.file.originalname.split('.').pop()}`},function(err , updatedUser){
+        if(req.params.id){
+            User.findOne({_id:req.params.id},function(err, user){
                 if(err){
-                    res.json({
+                    return res.json({
                         error: err
                     });
                 }
-                res.json({
-                    message: 'Updated',
-                    user: updatedUser
+                bucket.upload(req.file.path, function( err, file, apiResponse) {
+                    if(err){
+                        return res.json({
+                            error: err
+                        });
+                    }
+                    if(file){
+                        const config = {
+                            action: 'read',
+                            expires: '03-17-2025'
+                        };
+                        file.getSignedUrl(config, function(err, url) {
+                            if (err) {
+                                return res.json({
+                                    error: err
+                                });
+                            }
+                            User.update({_id:req.params.id},{'photo':url},function(err , updatedUser){
+                                if(err){
+                                    res.json({
+                                        error: err
+                                    });
+                                }
+                                res.json({
+                                    message: 'Updated',
+                                    user: updatedUser
+                                });
+                            });
+                        });
+                    }
                 });
-            })
-  
-        });
-      }else{
-        res.json({
-            error: 'No uid'
-        });
-      }
+            });
+        }else{
+            res.json({
+                error: 'No uid'
+            });
+        }
     }
     else{
       res.json({
           error: 'No image'
-      })
+      });
     }
 });
 app.get('/logout', function(req, res, next) {

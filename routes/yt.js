@@ -4,9 +4,6 @@ const path = require('path');
 const Song = require('../models/song');
 const Video = require('../models/video');
 const youtubedl = require('youtube-dl');
-const ffmpeg = require('fluent-ffmpeg');
-const readline = require('readline');
-const ytdl = require('ytdl-core');
 const dir = path.resolve(__dirname, '..');
 let router = ex.Router();
 let mapInfo = function (item) {
@@ -293,6 +290,7 @@ router.get('/download/audio/:id', function(req, res) {
         youtubedl.exec(`http://www.youtube.com/watch?v=${id}`, ['-x', '--audio-format','mp3', '-f', 'bestaudio','-o' ,`public/audio/${id}.%(ext)s`],{}, function exec(err, output) {
             console.error(err);
             console.warn(output);
+            console.log(`${dir}/audio/${id}.webm`);
             youtubedl.getInfo(`http://www.youtube.com/watch?v=${id}`, function getInfo(err, info) {
                 if (err) {
                     res.json({
@@ -300,36 +298,57 @@ router.get('/download/audio/:id', function(req, res) {
                         'error':'Internal Error'
                     });
                 }else{
-                    let song = {
-                        id:id,
-                        title: info.title?info.title:'Unknown',
-                        artist: info.artist?info.artist:'Unknown',
-                        extension:'mp3',
-                        duration: info.duration,
-                        path:`/static/audio/${id}.mp3`,
-                        pathDownload:`/save/${id}?type=audio`,
-                        imagePath:info.thumbnails[0].url    
-                    };
-                    Song.create(song, function(err, song) {
-                        if(err) {
-                            res.json({
-                                'error' : err
+                    bucket.upload(`${dir}/public/audio/${id}.mp3`, function( err, file, apiResponse) {
+                        if(err){
+                            return res.json({
+                                error: err
                             });
-                        }else{
-                            Song.get({}, function(err, songs) {
-                                if(err) {
-                                    res.json({
+                        }
+                        if(file){
+                            const config = {
+                                action: 'read',
+                                expires: '03-17-2025'
+                            };
+                            file.getSignedUrl(config, function(err, url) {
+                                if (err) {
+                                    return res.json({
                                         error: err
                                     });
-                                }else{
-                                    res.json({
-                                        'song':song,
-                                        'songs':songs,
-                                        'message':'On Server 😁😁😁',
-                                        'path':`/save/${id}?type=audio`,
-                                    });
                                 }
-                            }); 
+                                let song = {
+                                    id:id,
+                                    title: info.title?info.title:'Unknown',
+                                    artist: info.artist?info.artist:'Unknown',
+                                    extension:'mp3',
+                                    duration: info.duration,
+                                    path:url,
+                                    pathDownload:`/save/${id}?type=audio`,
+                                    imagePath:info.thumbnails[0].url    
+                                };
+                                Song.create(song, function(err, song) {
+                                    if(err) {
+                                        res.json({
+                                            'error' : err
+                                        });
+                                    }else{
+                                        Song.get({}, function(err, songs) {
+                                            if(err) {
+                                                res.json({
+                                                    error: err
+                                                });
+                                            }else{
+                                                res.json({
+                                                    'song':song,
+                                                    'songs':songs,
+                                                    'message':'On Server 😁😁😁',
+                                                    'path':`/save/${id}?type=audio`,
+                                                });
+                                            }
+                                        }); 
+                                    }
+                                });
+                                
+                            });
                         }
                     });
                 }
