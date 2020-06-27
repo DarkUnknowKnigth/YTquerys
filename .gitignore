@@ -1,10 +1,7 @@
 /node_modules
 package-lock.json
-/public/audio/*.mp3
-/public/video/*.mp4
-/public/image/*.jpeg
-/public/image/*.png
-/public/image/*.JPEG
-/public/image/*.gif
+/public/audio/*.*
+/public/video/*.*
+/public/image/*.*
 .env
 yt-downloader-bc6b0-firebase-adminsdk-xcvat-651c512204.json

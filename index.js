@@ -9,7 +9,6 @@ const session = require('express-session');
 const User = require('./models/user');
 const multer = require('multer');
 const admin = require('firebase-admin');
-const serviceAccount = require('./yt-downloader-bc6b0-firebase-adminsdk-xcvat-651c512204.json');
 admin.initializeApp({
     credential: admin.credential.cert({
         'type':process.env.type,
