@@ -45,8 +45,8 @@ router.delete('/:id', function(req, res){
                     console.log(err);
                 });
                 try {
-                    if(fs.statSync(dir+song.path.replace('static','public'))){
-                        fs.unlinkSync(dir+song.path.replace('static','public'));
+                    if(fs.statSync(`${dir}/public/audio/${req.params.id}.mp3`)){
+                        fs.unlinkSync(`${dir}/public/audio/${req.params.id}.mp3`);
                     } else{
                         err_.push("Cannot find your file");
                     }
