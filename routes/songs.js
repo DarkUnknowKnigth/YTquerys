@@ -40,6 +40,15 @@ router.delete('/:id', function(req, res){
         }else{
             let err_ = []; 
             if(song){
+                const file = bucket.file(`${song.id}.mp3`);
+                file.delete(function(err, apiResponse) {
+                    return res.json({
+                        err: err
+                    })
+                });
+                file.delete().then(function(data) {
+                    const apiResponse = data[0];
+                });
                 try {
                     if(fs.statSync(dir+song.path.replace('static','public'))){
                         fs.unlinkSync(dir+song.path.replace('static','public'));
