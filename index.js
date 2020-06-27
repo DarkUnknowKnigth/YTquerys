@@ -1,3 +1,4 @@
+require('dotenv').config();
 const ex = require('express');
 const mongo = require('./mongo');
 const yt = require('./routes/yt')
@@ -37,7 +38,6 @@ const storage = multer.diskStorage({
 });
 const upload = multer({storage:storage});
 const cors = require('cors');
-require('dotenv').config();
 const bodyParser = require('body-parser'); // 
 const app = ex();
 const corsOptions = {
