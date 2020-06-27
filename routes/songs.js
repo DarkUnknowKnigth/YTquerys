@@ -42,9 +42,7 @@ router.delete('/:id', function(req, res){
             if(song){
                 const file = bucket.file(`${song.id}.mp3`);
                 file.delete(function(err, apiResponse) {
-                    return res.json({
-                        err: err
-                    })
+                    console.log(err);
                 });
                 file.delete().then(function(data) {
                     const apiResponse = data[0];
