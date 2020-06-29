@@ -275,7 +275,11 @@ router.get('/download/audio/:id', function(req, res) {
                 Song.get({}, function(err, songs) {
                     if(err) {
                         res.json({
-                            error: err
+                            error: err,
+                            songs: [],
+                            song: {},
+                            path: '',
+                            message: 'Error when query song'
                         })
                     }
                     res.json({
@@ -355,12 +359,23 @@ router.get('/download/audio/:id', function(req, res) {
                                                                     'error' : err
                                                                 });
                                                             }else{
-                                                                res.json({
-                                                                    'song':song,
-                                                                    'songs':songs,
-                                                                    'message':'On Server 😁😁😁',
-                                                                    'path':`/save/${id}?type=audio`,
-                                                                });
+                                                                Song.get({}, function(err, songs) {
+                                                                    if(err) {
+                                                                        res.json({
+                                                                            error: err,
+                                                                            songs: [],
+                                                                            song: {},
+                                                                            path: '',
+                                                                            message: 'Error when query song'
+                                                                        })
+                                                                    }
+                                                                    res.json({
+                                                                        'song':song,
+                                                                        'songs':songs,
+                                                                        'message':'Downloaded On Server 😁😁😁',
+                                                                        'path':`/save/${id}?type=audio`,
+                                                                    });
+                                                                }); 
                                                             }
                                                         });
                                                         
