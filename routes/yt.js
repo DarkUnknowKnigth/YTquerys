@@ -318,9 +318,11 @@ router.get('/download/audio/:id', function(req, res) {
                                             bucket.upload(`${dir}/public/audio/${id}.mp3`, function( err, file, apiResponse) {
                                                 if(err){
                                                     return res.json({
-                                                        error: err,
-                                                        songs: songs,
-                                                        message : 'Error when upload to cloud'
+                                                        'api': apiResponse,
+                                                        'file': file,
+                                                        'error': err,
+                                                        'songs': songs,
+                                                        'message' : 'Error when upload to cloud'
                                                     });
                                                 }
                                                 if(file){
