@@ -315,7 +315,8 @@ router.get('/download/audio/:id', function(req, res) {
                                                 'error':'Internal Error'
                                             });
                                         }else{
-                                            bucket.upload(`${dir}/public/audio/${id}.mp3`, function( err, file, apiResponse) {
+                                            
+                                            bucket.upload(`${dir}/public/audio/${id}.mp3`, {resumable:false} , function( err, file, apiResponse) {
                                                 if(err){
                                                     return res.json({
                                                         'api': apiResponse,
