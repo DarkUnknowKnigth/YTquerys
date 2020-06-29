@@ -292,6 +292,7 @@ router.get('/download/audio/:id', function(req, res) {
                             'error': err,
                             'songs': [],
                             'song':{},
+                            'message':'Error quering database',
                             'path':''
                         });
                     }else{
@@ -305,61 +306,73 @@ router.get('/download/audio/:id', function(req, res) {
                                 });
                             }
                             else{
-                                youtubedl.getInfo(`http://www.youtube.com/watch?v=${id}`, function getInfo(err, info) {
-                                    if (err) {
-                                        res.json({
-                                            'message':'Error when try get info of audio 💀 id:'+id,
-                                            'error':'Internal Error'
-                                        });
-                                    }else{
-                                        bucket.upload(`${dir}/public/audio/${id}.mp3`, function( err, file, apiResponse) {
-                                            if(err){
-                                                return res.json({
-                                                    error: err,
-                                                    songs: songs
-                                                });
-                                            }
-                                            if(file){
-                                                const config = {
-                                                    action: 'read',
-                                                    expires: '03-17-2025'
-                                                };
-                                                file.getSignedUrl(config, function(err, url) {
-                                                    if (err) {
-                                                        return res.json({
-                                                            error: err
-                                                        });
-                                                    }
-                                                    let song = {
-                                                        id:id,
-                                                        title: info.title?info.title:'Unknown',
-                                                        artist: info.artist?info.artist:'Unknown',
-                                                        extension:'mp3',
-                                                        duration: info.duration,
-                                                        path:url,
-                                                        pathDownload:`/save/${id}?type=audio`,
-                                                        imagePath:info.thumbnails[0].url    
+                                if(output){
+                                    youtubedl.getInfo(`http://www.youtube.com/watch?v=${id}`, function getInfo(err, info) {
+                                        if (err) {
+                                            res.json({
+                                                'songs':songs,
+                                                'message':'Error when try get info of audio 💀 id:'+id,
+                                                'error':'Internal Error'
+                                            });
+                                        }else{
+                                            bucket.upload(`${dir}/public/audio/${id}.mp3`, function( err, file, apiResponse) {
+                                                if(err){
+                                                    return res.json({
+                                                        error: err,
+                                                        songs: songs,
+                                                        message : 'Error when upload to cloud'
+                                                    });
+                                                }
+                                                if(file){
+                                                    const config = {
+                                                        action: 'read',
+                                                        expires: '03-17-2025'
                                                     };
-                                                    Song.create(song, function(err, song) {
-                                                        if(err) {
-                                                            res.json({
-                                                                'error' : err
-                                                            });
-                                                        }else{
-                                                            res.json({
-                                                                'song':song,
-                                                                'songs':songs,
-                                                                'message':'On Server 😁😁😁',
-                                                                'path':`/save/${id}?type=audio`,
+                                                    file.getSignedUrl(config, function(err, url) {
+                                                        if (err) {
+                                                            return res.json({
+                                                                error: err,
+                                                                songs: songs,
+                                                                message : 'Error when get url from cloud'
                                                             });
                                                         }
+                                                        let song = {
+                                                            id:id,
+                                                            title: info.title?info.title:'Unknown',
+                                                            artist: info.artist?info.artist:'Unknown',
+                                                            extension:'mp3',
+                                                            duration: info.duration,
+                                                            path:url,
+                                                            pathDownload:`/save/${id}?type=audio`,
+                                                            imagePath:info.thumbnails[0].url    
+                                                        };
+                                                        Song.create(song, function(err, song) {
+                                                            if(err) {
+                                                                res.json({
+                                                                    'error' : err
+                                                                });
+                                                            }else{
+                                                                res.json({
+                                                                    'song':song,
+                                                                    'songs':songs,
+                                                                    'message':'On Server 😁😁😁',
+                                                                    'path':`/save/${id}?type=audio`,
+                                                                });
+                                                            }
+                                                        });
+                                                        
                                                     });
-                                                    
-                                                });
-                                            }
-                                        });
-                                    }
-                                });
+                                                }
+                                            });
+                                        }
+                                    });
+                                } else{
+                                    return res.json({
+                                        error: err,
+                                        songs: songs,
+                                        message : 'Error when parsing to mp3'
+                                    });
+                                }
                             }
                         });     
                     }
