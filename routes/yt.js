@@ -4,6 +4,7 @@ const path = require('path');
 const Song = require('../models/song');
 const Video = require('../models/video');
 const youtubedl = require('youtube-dl');
+const { response } = require('express');
 const dir = path.resolve(__dirname, '..');
 let router = ex.Router();
 let mapInfo = function (item) {
@@ -210,8 +211,13 @@ router.get('/save/:id', function(req, res) {
             console.log(song.id);
             const file = bucket.file(song.id+'.mp3');
             file.download({destination:`./public/audio/${song.id}.mp3`}).then(()=>{
-                res.download(`${dir}/public/audio/${song.id}.mp3`,`${song.artist} ${song.title}.mp3`);
-            }).catch(console.error);
+                return res.download(`${dir}/public/audio/${song.id}.mp3`,`${song.artist} ${song.title}.mp3`);
+            }).catch(()=>{
+                return res.json({
+                    'message':'Error when download song from cloud',
+                    'error': 'Not downloaded'
+                });
+            });
         });
     }
     else if(req.query.type=="video"){
