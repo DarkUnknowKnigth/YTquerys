@@ -76,7 +76,7 @@ app.post('/login', function( req , res){
                   req.session.uid = auth._id;
                   res.json({
                       user:auth,
-                      session: req.session,
+                      session: req.session.uid,
                       message:'logged'
                   });
               }

@@ -44,7 +44,7 @@ router.put('/:id', function(req, res){
                     message:'updated',
                     user:updatedUser,
                     users: users,
-                    session: req.body.session
+                    session:req.headers['session']
                 });
             }); 
         }
