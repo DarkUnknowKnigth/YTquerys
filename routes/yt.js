@@ -207,7 +207,9 @@ router.get('/save/:id', function(req, res) {
                     'error':'Internal Error'
                 });
             }
-            res.download(`${dir}/public/audio/${song.id}.mp3`,`${song.artist} ${song.title}.mp3`);
+            const file = bucket.file(song.id+'.mp3');
+            file.download({destination:`./${song.artist} ${song.title}.mp3`}).catch(console.error);
+            // res.download(`${dir}/public/audio/${song.id}.mp3`,`${song.artist} ${song.title}.mp3`);
         });
     }
     else if(req.query.type=="video"){
