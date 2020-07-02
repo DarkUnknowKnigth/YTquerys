@@ -353,9 +353,17 @@ router.get('/download/audio/:id', function(req, res) {
                                                                 message : 'Error when get url from cloud'
                                                             });
                                                         }
+                                                        let title = ''
+                                                        if(song.title.indexOf("(") > 0 ){
+
+                                                            title = info.title.substring(info.title.indexOf("-")+1,info.title.indexOf("("));
+                                                        }
+                                                        if(song.title.indexOf("[") >0){
+                                                            title = info.title.substring(info.title.indexOf("-")+1,info.title.indexOf("["));
+                                                        }
                                                         let song = {
                                                             id:id,
-                                                            title: info.title?info.title.replace('(Official Video)','').substring(info.title.indexOf("-")+1,info.title.length):'Unknown',
+                                                            title: info.title?title:'Unknown',
                                                             artist: info.artist?info.artist:'Unknown',
                                                             extension:'mp3',
                                                             duration: info.duration,
