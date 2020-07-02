@@ -354,11 +354,11 @@ router.get('/download/audio/:id', function(req, res) {
                                                             });
                                                         }
                                                         let title = ''
-                                                        if(song.title.indexOf("(") > 0 ){
+                                                        if(info.title.indexOf("(") > 0 ){
 
                                                             title = info.title.substring(info.title.indexOf("-")+1,info.title.indexOf("("));
                                                         }
-                                                        if(song.title.indexOf("[") >0){
+                                                        if(info.title.indexOf("[") >0){
                                                             title = info.title.substring(info.title.indexOf("-")+1,info.title.indexOf("["));
                                                         }
                                                         let song = {
