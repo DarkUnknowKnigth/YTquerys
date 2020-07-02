@@ -355,7 +355,7 @@ router.get('/download/audio/:id', function(req, res) {
                                                         }
                                                         let song = {
                                                             id:id,
-                                                            title: info.title?info.title:'Unknown',
+                                                            title: info.title?info.title.substring(inf.title.indexOf("-"),info.title.length).replace('(Official Video)',''):'Unknown',
                                                             artist: info.artist?info.artist:'Unknown',
                                                             extension:'mp3',
                                                             duration: info.duration,

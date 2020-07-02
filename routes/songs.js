@@ -6,7 +6,7 @@ const fs = require('fs');
 const path = require('path');
 const dir = path.resolve(__dirname, '..');
 router.get('/', function(req, res){
-    Song.get({}, function(err, songs) {
+    Song.find({}).sort({artist:1}).exec(function(err, songs) {
         if(err) {
             res.json({
                 error: err
@@ -16,7 +16,7 @@ router.get('/', function(req, res){
                 songs: songs
             });
         }
-    }); 
+    });
 });
 router.get('/:id', function(){
     Song.findOne({'id': req.params.id}, function(err, song) {
