@@ -363,11 +363,11 @@ router.get('/download/audio/:id', function(req, res) {
                                                                 title = info.title.substring(info.title.indexOf("-")+1,info.title.indexOf("["));
                                                             }
                                                         }
-                                                        if(info.artist){
-                                                            tArtist = info.artist;
-                                                        }else{
+                                                        if(!info.artist){
                                                             if(info.title.indexOf("-") > 0){
                                                                 tArtist = info.title.substring(0,info.title.indexOf("-") - 1);
+                                                            }else{
+                                                                tArtist = 'Unknown';
                                                             }
                                                         }
                                                         let song = {
