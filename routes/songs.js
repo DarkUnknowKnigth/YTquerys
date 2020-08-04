@@ -8,11 +8,11 @@ const dir = path.resolve(__dirname, '..');
 router.get('/', function(req, res){
     Song.find({}).sort({artist:1}).exec(function(err, songs) {
         if(err) {
-            res.json({
+            return res.json({
                 error: err
             });
         }else{
-            res.json({
+            return res.json({
                 songs: songs
             });
         }
@@ -21,20 +21,52 @@ router.get('/', function(req, res){
 router.get('/:id', function(){
     Song.findOne({'id': req.params.id}, function(err, song) {
         if(err) {
-            res.json({
+            return res.json({
                 error: err
             });
         }else{
-            res.json({
+            return res.json({
                 song: song
             });
+        }
+    }); 
+});
+router.put('/:id', function(req , res){
+    Song.findOne({'id': req.params.id}, function(err, song) {
+        if(err) {
+            return res.json({
+                error: err
+            });
+        }else{
+            if(song){
+                Song.update({id: req.params.id},{
+                    title: req.body.title,
+                    artist: req.body.artist
+                }, ( err, updatedSong ) => {
+                    if(err){
+                        return res.json({
+                            message : '🔥 Error When update 🔥',
+                            error: err
+                        });
+                    }else{
+                        return res.json({
+                            message: 'Song updated 👍'
+                        });
+                    }
+                });
+            }
+            else{
+                return res.json({
+                    message: 'Song not found 😒'
+                });
+            }
         }
     }); 
 });
 router.delete('/:id', function(req, res){
     Song.findOne({'id':req.params.id}, function(err, song) {
         if(err) {
-            res.json({
+            return res.json({
                 error: 'Not exist'
             });
         }else{
@@ -56,17 +88,17 @@ router.delete('/:id', function(req, res){
                 }
                 Song.delete({'id':req.params.id}, function(err){
                     if(err){
-                        res.json({
+                        return res.json({
                             error: 'Canot delete'
                         });
                     }
-                    res.json({
+                    return res.json({
                         'message':'deleted',
                         'error': err_
                     });
                 });
             }else{
-                res.json({
+                return res.json({
                     'message':'not found',
                 })
             }

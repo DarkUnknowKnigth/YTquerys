@@ -19,7 +19,7 @@ let mapInfo = function (item) {
 }
 
 router.get('/help', function(req, res){
-    res.json({
+    return res.json({
         message: 'Bienvenido al server de YT-Downloader',
         help:[
             'yt/download/{id}?resolution={number}',
@@ -56,13 +56,13 @@ router.get('/download/:id', function(req, res) {
     let size ='';
     let formats= [];
     if(req.params.id.length!= 11){
-        res.json({ 
+        return res.json({ 
             'message':'Error the id must contain 11 characters 😫 id',
             'error':'Internal Error'
         });
     }
     if(fs.existsSync(`${dir}/public/video/${req.params.id}_${resolution}.mp4`)){
-        res.send({ 
+        return res.send({ 
             'message': 'downloaded', 
             'path': `view/${req.params.id}?resolution=${resolution}&type=video`,
             'size':size,
@@ -73,7 +73,7 @@ router.get('/download/:id', function(req, res) {
         let id = req.params.id;
         Video.findOne({'id':req.params.id},function (err, videoOld){
             if(err){
-               res.json({
+               return res.json({
                    'error':err
                });
             } 
@@ -82,7 +82,7 @@ router.get('/download/:id', function(req, res) {
                     console.log('Exist but not resolution');  
                     youtubedl.getInfo(`http://www.youtube.com/watch?v=${req.params.id}`, function getInfo(err, info) {
                         if (err) {
-                            res.json({
+                            return res.json({
                                 'message':'Not info for your Id',
                                 'error':'Not found'
                             });
@@ -102,18 +102,18 @@ router.get('/download/:id', function(req, res) {
                                     'resolutions':newRes
                                 }, (err, updatedVideo) =>{
                                     if(err){
-                                        res.json({
+                                        return res.json({
                                             'message':'Not updated videos resolutions',
                                             'error':'Not Update'
                                         });
                                     }
                                     Video.get({}, function(err, videos) {
                                         if(err) {
-                                            res.json({
+                                            return res.json({
                                                 error: err
                                             })
                                         }else{
-                                            res.json({
+                                            return res.json({
                                                 'video':updatedVideo,
                                                 'videos':videos,
                                                 'size':size,
@@ -131,7 +131,7 @@ router.get('/download/:id', function(req, res) {
                     console.log('No exists');  
                     youtubedl.getInfo(`http://www.youtube.com/watch?v=${req.params.id}`, function getInfo(err, info) {
                         if (err) {
-                            res.json({
+                            return res.json({
                                 'message':'Not info for your Id',
                                 'error':'Not found'
                             });
@@ -162,17 +162,17 @@ router.get('/download/:id', function(req, res) {
                                 };
                                 Video.create(data, function(err, newVideo) {
                                     if(err) {
-                                        res.json({
+                                        return res.json({
                                             'error' : err
                                         });
                                     }else{
                                         Video.get({}, function(err, videos) {
                                             if(err) {
-                                                res.json({
+                                                return res.json({
                                                     error: err
                                                 })
                                             }else{
-                                                res.json({
+                                                return res.json({
                                                     'video':newVideo,
                                                     'videos':videos,
                                                     'size':size,
@@ -195,7 +195,7 @@ router.get('/download/:id', function(req, res) {
 router.get('/save/:id', function(req, res) {
     let resolution = req.query.resolution;
     if(req.params.id.length!= 11){
-        res.json({ 
+        return res.json({ 
             'message':'Error the id must contain 11 characters 😫 id',
             'error':'Internal Error'
         });
@@ -203,7 +203,7 @@ router.get('/save/:id', function(req, res) {
     if(req.query.type=="audio"){
         Song.findOne({'id':req.params.id}, function(err , song){
             if(err){
-                res.json({ 
+                return res.json({ 
                     'message':'Error song not found 😫',
                     'error':'Internal Error'
                 });
@@ -223,7 +223,7 @@ router.get('/save/:id', function(req, res) {
     else if(req.query.type=="video"){
         Video.findOne({'id':req.params.id},(err , video)=>{
             if(err){
-                res.json({ 
+                return res.json({ 
                     'message':'Error Video not Found 😫',
                     'error':'Internal Error'
                 });
@@ -233,12 +233,12 @@ router.get('/save/:id', function(req, res) {
                 let index = validResolution.indexOf(resolution);
                 let cres = video.resolutions.filter(resol => validResolution[ index - 1] <= Number.parseInt(resolution) || validResolution[index + 1] >= Number.parseInt(resolution));
                 if(cres.length > 0){
-                    res.download(`${dir}/public/video/${req.params.id}_${cres[0]}.mp4`,`${video.title} ${video.artist}.mp4`);
+                    return res.download(`${dir}/public/video/${req.params.id}_${cres[0]}.mp4`,`${video.title} ${video.artist}.mp4`);
                 } else{
-                    res.download(`${dir}/public/video/${req.params.id}_${video.resolutions[0]}.mp4`,`${video.title} ${video.artist}.mp4`);
+                    return res.download(`${dir}/public/video/${req.params.id}_${video.resolutions[0]}.mp4`,`${video.title} ${video.artist}.mp4`);
                 }
             }else{
-                res.json({ 
+                return res.json({ 
                     'message':'Error No Found videos with your id 😫',
                     'error':'Internal Error'
                 });
@@ -246,7 +246,7 @@ router.get('/save/:id', function(req, res) {
         });
     }
     else{
-        res.json({ 
+        return res.json({ 
             'message':'Error can not find type on your request 💀',
             'error':'Internal Error'
         });
@@ -254,7 +254,7 @@ router.get('/save/:id', function(req, res) {
 });
 router.get('/info/:id', function(req, res) {
     if(req.params.id.length!= 11){
-        res.json({ 
+        return res.json({ 
             'message':'Error the id must contain 11 characters 😫 id',
             'error':'Internal Error'
         });
@@ -264,27 +264,27 @@ router.get('/info/:id', function(req, res) {
             throw err
         }
         let formats = { id: info.id, formats:  info.formats.map(mapInfo).sort( (i,j) => i.resolution - j.resolution  )}
-        res.send(formats);
+        return res.send(formats);
     });
 });
 router.get('/download/audio/:id', function(req, res) {
     const id = req.params.id;
     if(id.length != 11){
-        res.status(500).json({ 
+        return res.status(500).json({ 
             'message':'Error the id must contain 11 characters 😫 id:'+id,
             'error':'Internal Error'
         });
     }
     Song.findOne({id:req.params.id}, function(err, song) {
         if(err) {
-            res.json({
+            return res.json({
                 error: err
             });
         }else{
             if(song){
                 Song.get({}, function(err, songs) {
                     if(err) {
-                        res.json({
+                        return res.json({
                             error: err,
                             songs: [],
                             song: {},
@@ -292,7 +292,7 @@ router.get('/download/audio/:id', function(req, res) {
                             message: 'Error when query song'
                         })
                     }
-                    res.json({
+                    return res.json({
                         'song':song,
                         'songs':songs,
                         'message':'Downloaded On Server 😁😁😁',
@@ -302,7 +302,7 @@ router.get('/download/audio/:id', function(req, res) {
             }else{
                 Song.get({}, function(err, songs) {
                     if(err) {
-                        res.json({
+                        return res.json({
                             'error': err,
                             'songs': [],
                             'song':{},
@@ -312,7 +312,7 @@ router.get('/download/audio/:id', function(req, res) {
                     }else{
                         youtubedl.exec(`http://www.youtube.com/watch?v=${id}`, ['-x', '--audio-format','mp3', '-f', 'bestaudio','-o' ,`public/audio/${id}.%(ext)s`],{}, function exec(err, output) {
                             if(err){
-                                res.json({
+                                return res.json({
                                     'songs': {},
                                     'path':'',
                                     'songs':songs,
@@ -323,7 +323,7 @@ router.get('/download/audio/:id', function(req, res) {
                                 if(output){
                                     youtubedl.getInfo(`http://www.youtube.com/watch?v=${id}`, function getInfo(err, info) {
                                         if (err) {
-                                            res.json({
+                                            return res.json({
                                                 'songs':songs,
                                                 'message':'Error when try get info of audio 💀 id:'+id,
                                                 'error':'Internal Error'
@@ -353,12 +353,11 @@ router.get('/download/audio/:id', function(req, res) {
                                                                 message : 'Error when get url from cloud'
                                                             });
                                                         }
-                                                        let title = ''
-                                                        if(info.title.indexOf("(") > 0 ){
-
+                                                        let title = info.title;
+                                                        if(info.title.indexOf("(") > 0 && info.title.indexOf("-") > 0 ){
                                                             title = info.title.substring(info.title.indexOf("-")+1,info.title.indexOf("("));
                                                         }
-                                                        if(info.title.indexOf("[") >0){
+                                                        if(info.title.indexOf("[") >0 && info.title.indexOf("-") > 0 ){
                                                             title = info.title.substring(info.title.indexOf("-")+1,info.title.indexOf("["));
                                                         }
                                                         let song = {
@@ -373,13 +372,13 @@ router.get('/download/audio/:id', function(req, res) {
                                                         };
                                                         Song.create(song, function(err, song) {
                                                             if(err) {
-                                                                res.json({
+                                                                return res.json({
                                                                     'error' : err
                                                                 });
                                                             }else{
                                                                 Song.get({}, function(err, songs) {
                                                                     if(err) {
-                                                                        res.json({
+                                                                        return res.json({
                                                                             error: err,
                                                                             songs: [],
                                                                             song: {},
@@ -387,7 +386,7 @@ router.get('/download/audio/:id', function(req, res) {
                                                                             message: 'Error when query song'
                                                                         })
                                                                     }
-                                                                    res.json({
+                                                                    return res.json({
                                                                         'song':song,
                                                                         'songs':songs,
                                                                         'message':'Downloaded On Server 😁😁😁',
