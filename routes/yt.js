@@ -208,7 +208,6 @@ router.get('/save/:id', function(req, res) {
                     'error':'Internal Error'
                 });
             }
-            console.log(song.id);
             const file = bucket.file(song.id+'.mp3');
             file.download({destination:`./public/audio/${song.id}.mp3`}).then(()=>{
                 return res.download(`${dir}/public/audio/${song.id}.mp3`,`${song.artist} ${song.title}.mp3`);
@@ -359,8 +358,11 @@ router.get('/download/audio/:id', function(req, res) {
                                                             if(info.title.indexOf("(") > 0 ){
                                                                 title = info.title.substring(info.title.indexOf("-")+1,info.title.indexOf("("));
                                                             }
-                                                            if(info.title.indexOf("[") >0 ){
+                                                            else if(info.title.indexOf("[") >0 ){
                                                                 title = info.title.substring(info.title.indexOf("-")+1,info.title.indexOf("["));
+                                                            }
+                                                            else{
+                                                                title = info.title.substring(info.title.indexOf("-")+1, info.title.length);
                                                             }
                                                         }
                                                         if(!info.artist){
