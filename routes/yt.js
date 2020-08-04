@@ -354,16 +354,26 @@ router.get('/download/audio/:id', function(req, res) {
                                                             });
                                                         }
                                                         let title = info.title;
-                                                        if(info.title.indexOf("(") > 0 && info.title.indexOf("-") > 0 ){
-                                                            title = info.title.substring(info.title.indexOf("-")+1,info.title.indexOf("("));
+                                                        let tArtist = info.artist;
+                                                        if(info.title.indexOf("-") > 0){
+                                                            if(info.title.indexOf("(") > 0 ){
+                                                                title = info.title.substring(info.title.indexOf("-")+1,info.title.indexOf("("));
+                                                            }
+                                                            if(info.title.indexOf("[") >0 ){
+                                                                title = info.title.substring(info.title.indexOf("-")+1,info.title.indexOf("["));
+                                                            }
                                                         }
-                                                        if(info.title.indexOf("[") >0 && info.title.indexOf("-") > 0 ){
-                                                            title = info.title.substring(info.title.indexOf("-")+1,info.title.indexOf("["));
+                                                        if(info.artist){
+                                                            tArtist = info.artist;
+                                                        }else{
+                                                            if(info.title.indexOf("-") > 0){
+                                                                tArtist = info.title.substring(0,info.title.indexOf("-") - 1);
+                                                            }
                                                         }
                                                         let song = {
                                                             id:id,
                                                             title: info.title?title:'Unknown',
-                                                            artist: info.artist?info.artist:'Unknown',
+                                                            artist: tArtist,
                                                             extension:'mp3',
                                                             duration: info.duration,
                                                             path:url,
