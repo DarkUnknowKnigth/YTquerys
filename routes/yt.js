@@ -283,13 +283,13 @@ router.get('/download/audio/:id', function(req, res) {
             if(song){
                 Song.get({}, function(err, songs) {
                     if(err) {
-                        return res.json({
+                        return res.status(500).json({
                             error: err,
                             songs: [],
                             song: {},
                             path: '',
                             message: 'Error when query song'
-                        })
+                        });
                     }
                     return res.json({
                         'song':song,
@@ -301,7 +301,7 @@ router.get('/download/audio/:id', function(req, res) {
             }else{
                 Song.get({}, function(err, songs) {
                     if(err) {
-                        return res.json({
+                        return res.status(500).json({
                             'error': err,
                             'songs': [],
                             'song':{},
@@ -311,7 +311,7 @@ router.get('/download/audio/:id', function(req, res) {
                     }else{
                         youtubedl.exec(`http://www.youtube.com/watch?v=${id}`, ['-x', '--audio-format','mp3', '-f', 'bestaudio','-o' ,`public/audio/${id}.%(ext)s`],{}, function exec(err, output) {
                             if(err){
-                                return res.json({
+                                return res.status(500).json({
                                     'songs': {},
                                     'path':'',
                                     'songs':songs,
@@ -322,7 +322,7 @@ router.get('/download/audio/:id', function(req, res) {
                                 if(output){
                                     youtubedl.getInfo(`http://www.youtube.com/watch?v=${id}`, function getInfo(err, info) {
                                         if (err) {
-                                            return res.json({
+                                            return res.status(500).json({
                                                 'songs':songs,
                                                 'message':'Error when try get info of audio 💀 id:'+id,
                                                 'error':'Internal Error'
@@ -331,7 +331,7 @@ router.get('/download/audio/:id', function(req, res) {
                                             
                                             bucket.upload(`${dir}/public/audio/${id}.mp3`, {resumable:false} , function( err, file, apiResponse) {
                                                 if(err){
-                                                    return res.json({
+                                                    return res.status(500).json({
                                                         'api': apiResponse,
                                                         'file': file,
                                                         'error': err,
@@ -346,7 +346,7 @@ router.get('/download/audio/:id', function(req, res) {
                                                     };
                                                     file.getSignedUrl(config, function(err, url) {
                                                         if (err) {
-                                                            return res.json({
+                                                            return res.status(404).json({
                                                                 error: err,
                                                                 songs: songs,
                                                                 message : 'Error when get url from cloud'
@@ -384,13 +384,13 @@ router.get('/download/audio/:id', function(req, res) {
                                                         };
                                                         Song.create(song, function(err, song) {
                                                             if(err) {
-                                                                return res.json({
+                                                                return res.status(500).json({
                                                                     'error' : err
                                                                 });
                                                             }else{
                                                                 Song.get({}, function(err, songs) {
                                                                     if(err) {
-                                                                        return res.json({
+                                                                        return res.status(404).json({
                                                                             error: err,
                                                                             songs: [],
                                                                             song: {},
