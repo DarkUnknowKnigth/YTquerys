@@ -316,6 +316,7 @@ router.get('/download/audio/:id', function(req, res) {
                                     'path':'',
                                     'songs':songs,
                                     'message':'Error when download song',
+                                    'err':err
                                 });
                             }
                             else{
